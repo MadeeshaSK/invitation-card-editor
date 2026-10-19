@@ -445,7 +445,7 @@
 
         // Use a hidden div as QR target
         const container = document.createElement('div');
-        container.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+        container.style.cssText = 'position:fixed;left:0;top:0;opacity:0;pointer-events:none;z-index:-1;width:512px;height:512px;overflow:hidden;';
         document.body.appendChild(container);
 
         try {
@@ -458,21 +458,34 @@
             correctLevel: QRCode.CorrectLevel.H
           });
 
-          // QRCode renders synchronously into an <img> or <canvas>
-          setTimeout(() => {
-            const imgEl = container.querySelector('img') || container.querySelector('canvas');
-            if (!imgEl) { document.body.removeChild(container); resolve(null); return; }
-
-            const out = new Image();
-            out.onload = () => {
-              cachedQRImage = out;
-              cachedQRKey = key;
-              document.body.removeChild(container);
-              resolve(out);
-            };
-            out.onerror = () => { document.body.removeChild(container); resolve(null); };
-            out.src = (imgEl.tagName === 'CANVAS') ? imgEl.toDataURL() : imgEl.src;
-          }, 100);
+          // Poll for the QR element — mobile browsers render slower than desktop
+          let attempts = 0;
+          function tryExtract() {
+            attempts++;
+            const imgEl = container.querySelector('canvas') || container.querySelector('img');
+            if (imgEl) {
+              const src = (imgEl.tagName === 'CANVAS') ? imgEl.toDataURL() : imgEl.src;
+              if (!src || src === 'data:,') {
+                // canvas exists but not painted yet — keep waiting
+                if (attempts < 20) { setTimeout(tryExtract, 50); return; }
+                document.body.removeChild(container); resolve(null); return;
+              }
+              const out = new Image();
+              out.onload = () => {
+                cachedQRImage = out;
+                cachedQRKey = key;
+                document.body.removeChild(container);
+                resolve(out);
+              };
+              out.onerror = () => { document.body.removeChild(container); resolve(null); };
+              out.src = src;
+            } else if (attempts < 20) {
+              setTimeout(tryExtract, 50); // retry in 50ms (up to 1 second total)
+            } else {
+              document.body.removeChild(container); resolve(null);
+            }
+          }
+          setTimeout(tryExtract, 50);
         } catch (e) {
           document.body.removeChild(container);
           resolve(null);
