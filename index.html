@@ -10,6 +10,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
     rel="stylesheet" />
+  <!-- QR code generation library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     *,
     *::before,
@@ -404,9 +406,11 @@
     // ─── State ───────────────────────────────────────────────────────────────
     let selectedPronoun = '';
     let originalImage = null;        // HTMLImageElement (full res)
-    let qrImage = null;              // QR code image
+    let cachedQRImage = null;        // Dynamically generated QR image
+    let cachedQRKey = '';            // Key to detect if QR needs regeneration
     const IMG_SRC = 'sample.jpg';
-    const QR_SRC = 'QR.png';
+    // This site's own URL — QR points back here with params
+    const RECEIVER_BASE = 'https://madeeshask.github.io/Danushika-Thusitha-Engagement';
 
     // ─── Pronoun selection ────────────────────────────────────────────────────
     function selectPronoun(el) {
@@ -427,14 +431,52 @@
       });
     }
 
-    function loadQR() {
+    /**
+     * Dynamically generate a QR code that encodes:
+     *   http://localhost:8081/?title=<title>&name=<name>
+     * Returns an HTMLImageElement.
+     */
+    function generateDynamicQR(title, name) {
       return new Promise((resolve) => {
-        if (qrImage) { resolve(qrImage); return; }
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => { qrImage = img; resolve(img); };
-        img.onerror = () => resolve(null);   // QR optional — fail silently
-        img.src = QR_SRC;
+        const key = title + '||' + name;
+        if (cachedQRImage && cachedQRKey === key) { resolve(cachedQRImage); return; }
+
+        const url = RECEIVER_BASE + '/?title=' + encodeURIComponent(title) + '&name=' + encodeURIComponent(name);
+
+        // Use a hidden div as QR target
+        const container = document.createElement('div');
+        container.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+        document.body.appendChild(container);
+
+        try {
+          const qr = new QRCode(container, {
+            text: url,
+            width: 512,
+            height: 512,
+            colorDark: '#1a1208',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+          });
+
+          // QRCode renders synchronously into an <img> or <canvas>
+          setTimeout(() => {
+            const imgEl = container.querySelector('img') || container.querySelector('canvas');
+            if (!imgEl) { document.body.removeChild(container); resolve(null); return; }
+
+            const out = new Image();
+            out.onload = () => {
+              cachedQRImage = out;
+              cachedQRKey = key;
+              document.body.removeChild(container);
+              resolve(out);
+            };
+            out.onerror = () => { document.body.removeChild(container); resolve(null); };
+            out.src = (imgEl.tagName === 'CANVAS') ? imgEl.toDataURL() : imgEl.src;
+          }, 100);
+        } catch (e) {
+          document.body.removeChild(container);
+          resolve(null);
+        }
       });
     }
 
@@ -459,10 +501,10 @@
       // 1. Draw original image at full resolution
       ctx.drawImage(img, 0, 0, W, H);
 
-      // 1b. Overlay QR.png exactly on top of the existing QR code in the invitation
-      //     Pixel-measured from sample.jpg bottom-left QR area:
-      //       left ≈ 2.4% W,  top ≈ 84.2% H,  size ≈ 16.5% W (square)
-      const qr = await loadQR();
+      // 1b. Overlay dynamic QR code on top of the existing QR area in the invitation
+      //     The QR encodes: http://localhost:8081/?title=<title>&name=<name>
+      const nameVal2 = document.getElementById('nameInput').value.trim();
+      const qr = await generateDynamicQR(selectedPronoun, nameVal2);
       if (qr) {
         const qrX = Math.round(W * 0.100);
         const qrY = Math.round(H * 0.842);
@@ -557,9 +599,88 @@
       if (e.key === 'Enter') generatePreview();
     });
 
-    // Pre-load assets silently on page load
+    // ─── Auto-viewer mode: if URL has ?title=&name= params, show invitation directly ───
+    (function checkURLParams() {
+      const params = new URLSearchParams(window.location.search);
+      const urlTitle = params.get('title');
+      const urlName = params.get('name');
+
+      if (urlTitle && urlName) {
+        // Hide the editor UI, show a full-screen viewer
+        document.querySelector('.main-wrap').style.display = 'none';
+        document.querySelector('header .badge').textContent = '✦ Your Invitation ✦';
+
+        // Build viewer
+        const viewer = document.createElement('div');
+        viewer.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;max-width:520px;';
+
+        const guestStrip = document.createElement('div');
+        guestStrip.style.cssText = 'text-align:center;';
+        guestStrip.innerHTML = `
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#c8a96e;font-weight:600;margin-bottom:4px;">Personal Invitation for</div>
+          <div style="font-size:13px;color:rgba(200,169,110,0.7);letter-spacing:1px;">${urlTitle}</div>
+          <div style="font-family:'Playfair Display',serif;font-size:clamp(18px,4vw,26px);color:#e8d5a3;font-weight:600;">${urlName.toUpperCase()}</div>
+        `;
+        viewer.appendChild(guestStrip);
+
+        const vCanvas = document.createElement('canvas');
+        vCanvas.style.cssText = 'width:100%;height:auto;border-radius:10px;box-shadow:0 4px 32px rgba(0,0,0,0.4);';
+        viewer.appendChild(vCanvas);
+
+        // Download button
+        const dlBtn = document.createElement('button');
+        dlBtn.className = 'btn-download visible';
+        dlBtn.style.maxWidth = '340px';
+        dlBtn.textContent = '⬇ Save My Invitation';
+        viewer.appendChild(dlBtn);
+
+        document.querySelector('.main-wrap').insertAdjacentElement('afterend', viewer);
+
+        // Render invitation with the URL params
+        selectedPronoun = urlTitle;
+        const fakeInput = document.getElementById('nameInput');
+        fakeInput.value = urlName;
+
+        document.fonts.ready.then(async () => {
+          const img = await loadImage().catch(() => null);
+          if (!img) return;
+          const W = img.naturalWidth, H = img.naturalHeight;
+          vCanvas.width = W; vCanvas.height = H;
+          const ctx = vCanvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, W, H);
+
+          // Title
+          const pFontSize = Math.round(H * 0.022);
+          ctx.save();
+          ctx.font = `600 ${pFontSize}px 'Inter', Arial, sans-serif`;
+          ctx.letterSpacing = `${Math.round(W * 0.004)}px`;
+          ctx.fillStyle = '#1a1208'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(urlTitle, W / 2, Math.round(H * 0.358));
+          ctx.restore();
+
+          // Name
+          const nameFontSize = Math.round(H * 0.030);
+          ctx.save();
+          ctx.font = `600 ${nameFontSize}px 'Playfair Display', 'Georgia', serif`;
+          ctx.fillStyle = '#1a1208'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(urlName.toUpperCase(), W / 2, Math.round(H * 0.393));
+          ctx.restore();
+
+          // Download handler
+          dlBtn.onclick = () => {
+            const n = urlName.replace(/\s+/g, '-');
+            const p = urlTitle.replace(/[\s.&]+/g, '-').replace(/-+/g, '-').replace(/-$/, '');
+            const a = document.createElement('a');
+            a.download = `Engagement-Invitation-${p}-${n}.png`;
+            a.href = vCanvas.toDataURL('image/png');
+            a.click();
+          };
+        });
+      }
+    })();
+
+    // Pre-load background image silently on page load
     loadImage().catch(() => { });
-    loadQR().catch(() => { });
   </script>
 </body>
 
