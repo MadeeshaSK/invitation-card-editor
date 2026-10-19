@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Engagement Invitation – Customize Your Card</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --gold: #c8a96e;
+      --gold-light: #e8d5a3;
+      --dark: #1a1208;
+      --cream: #fdf8f0;
+      --card-bg: #ffffff;
+      --shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+      --radius: 18px;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1208 0%, #2d200f 40%, #1a1208 100%);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+    }
+
+    /* ---------- Header ---------- */
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    header .badge {
+      display: inline-block;
+      background: linear-gradient(90deg, #c8a96e, #e8d5a3, #c8a96e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(22px, 5vw, 34px);
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      color: #b8a07a;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ---------- Main Layout ---------- */
+    .main-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+      justify-content: center;
+      width: 100%;
+      max-width: 1080px;
+    }
+
+    /* ---------- Control Card ---------- */
+    .control-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(200, 169, 110, 0.3);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 380px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      flex-shrink: 0;
+    }
+
+    .section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--gold);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    /* Name input */
+    .input-group {
+      margin-bottom: 28px;
+    }
+
+    .input-group label {
+      display: block;
+      color: #c8b98a;
+      font-size: 13px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .input-group input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1.5px solid rgba(200, 169, 110, 0.35);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #f0e8d4;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .input-group input::placeholder {
+      color: rgba(200, 169, 110, 0.35);
+    }
+
+    .input-group input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(200, 169, 110, 0.12);
+    }
+
+    /* Pronoun chips */
+    .pronoun-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .pronoun-chip {
+      cursor: pointer;
+      border: 1.5px solid rgba(200, 169, 110, 0.3);
+      border-radius: 10px;
+      padding: 10px 8px;
+      text-align: center;
+      color: #b8a07a;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+      user-select: none;
+      background: rgba(255, 255, 255, 0.04);
+      letter-spacing: 0.5px;
+    }
+
+    .pronoun-chip:hover {
+      border-color: var(--gold);
+      color: var(--gold-light);
+      background: rgba(200, 169, 110, 0.08);
+    }
+
+    .pronoun-chip.selected {
+      background: linear-gradient(135deg, rgba(200, 169, 110, 0.25), rgba(232, 213, 163, 0.15));
+      border-color: var(--gold);
+      color: var(--gold-light);
+      box-shadow: 0 0 0 3px rgba(200, 169, 110, 0.12);
+    }
+
+    .pronoun-chip .chip-label {
+      font-size: 12px;
+      display: block;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(200, 169, 110, 0.3), transparent);
+      margin: 20px 0;
+    }
+
+    /* Buttons */
+    .btn-preview {
+      width: 100%;
+      padding: 13px 20px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #c8a96e, #e8d5a3, #c8a96e);
+      color: #1a1208;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+      margin-bottom: 12px;
+    }
+
+    .btn-preview:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(200, 169, 110, 0.4);
+    }
+
+    .btn-preview:active {
+      transform: translateY(0);
+    }
+
+    .btn-download {
+      width: 100%;
+      padding: 13px 20px;
+      border: 1.5px solid var(--gold);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--gold-light);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: none;
+    }
+
+    .btn-download.visible {
+      display: block;
+    }
+
+    .btn-download:hover {
+      background: rgba(200, 169, 110, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-reset {
+      width: 100%;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border: 1.5px solid rgba(200, 169, 110, 0.2);
+      border-radius: 12px;
+      background: transparent;
+      color: rgba(184, 160, 122, 0.55);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-reset:hover {
+      border-color: rgba(200, 169, 110, 0.5);
+      color: var(--gold-light);
+      background: rgba(200, 169, 110, 0.06);
+    }
+
+    .hint {
+      margin-top: 14px;
+      font-size: 12px;
+      color: rgba(184, 160, 122, 0.6);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* ---------- Preview Card ---------- */
+    .preview-card {
+      flex: 1;
+      min-width: 280px;
+      max-width: 560px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(200, 169, 110, 0.2);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .preview-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    #previewCanvas {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
+      display: block;
+    }
+
+    .placeholder-box {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      border: 1.5px dashed rgba(200, 169, 110, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(200, 169, 110, 0.3);
+      font-size: 13px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      display: none;
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(200, 169, 110, 0.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ---------- Footer ---------- */
+    footer {
+      margin-top: 40px;
+      color: rgba(184, 160, 122, 0.4);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      .control-card {
+        max-width: 100%;
+      }
+
+      .pronoun-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="badge">✦ Invitation Customizer ✦</div>
+  </header>
+
+  <div class="main-wrap">
+
+    <!-- Controls -->
+    <div class="control-card">
+      <div class="section-label">Enter Name</div>
+      <div class="input-group">
+        <input id="nameInput" type="text" placeholder="e.g. Perera" maxlength="60" autocomplete="off" />
+      </div>
+
+      <div class="section-label">Select Title</div>
+      <div class="pronoun-grid" id="pronounGrid">
+        <div class="pronoun-chip" data-value="MR." onclick="selectPronoun(this)">
+          <span class="chip-label">MR.</span>
+        </div>
+        <div class="pronoun-chip" data-value="MRS." onclick="selectPronoun(this)">
+          <span class="chip-label">MRS.</span>
+        </div>
+        <div class="pronoun-chip" data-value="MR &amp; MRS." onclick="selectPronoun(this)">
+          <span class="chip-label">MR &amp; MRS.</span>
+        </div>
+        <div class="pronoun-chip" data-value="MISS" onclick="selectPronoun(this)">
+          <span class="chip-label">MISS</span>
+        </div>
+        <div class="pronoun-chip" data-value="FAMILY OF" onclick="selectPronoun(this)" style="grid-column: 1/-1;">
+          <span class="chip-label">FAMILY OF</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <button class="btn-preview" onclick="generatePreview()">✦ Generate Preview</button>
+      <button class="btn-download" id="downloadBtn" onclick="downloadImage()">⬇ Download Invitation</button>
+      <button class="btn-reset" onclick="location.reload()">↺ Reset</button>
+
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-card">
+      <div class="preview-title">Live Preview</div>
+      <div class="spinner" id="spinner"></div>
+      <div class="placeholder-box" id="placeholder">
+        Fill in your name &amp; Title, then click <strong style="color:rgba(200,169,110,0.7)"> - Generate
+          Preview</strong>
+      </div>
+      <canvas id="previewCanvas" style="display:none;"></canvas>
+    </div>
+
+  </div>
+
+  <footer>Danushika &amp; Thusitha Engagement · January 01, 2027 · Skyloft, Kandy</footer>
+  <footer>Developed by <a href="https://github.com/MadeeshaSK">MadeeshaSK</a></footer>
+
+  <script>
+    // ─── State ───────────────────────────────────────────────────────────────
+    let selectedPronoun = '';
+    let originalImage = null;        // HTMLImageElement (full res)
+    let qrImage = null;              // QR code image
+    const IMG_SRC = 'sample.jpg';
+    const QR_SRC = 'QR.png';
+
+    // ─── Pronoun selection ────────────────────────────────────────────────────
+    function selectPronoun(el) {
+      document.querySelectorAll('.pronoun-chip').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedPronoun = el.dataset.value;
+    }
+
+    // ─── Load helpers ─────────────────────────────────────────────────────────
+    function loadImage() {
+      return new Promise((resolve, reject) => {
+        if (originalImage) { resolve(originalImage); return; }
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => { originalImage = img; resolve(img); };
+        img.onerror = reject;
+        img.src = IMG_SRC;
+      });
+    }
+
+    function loadQR() {
+      return new Promise((resolve) => {
+        if (qrImage) { resolve(qrImage); return; }
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => { qrImage = img; resolve(img); };
+        img.onerror = () => resolve(null);   // QR optional — fail silently
+        img.src = QR_SRC;
+      });
+    }
+
+    // ─── Core render ─────────────────────────────────────────────────────────
+    /*
+      Strategy:
+        1. Draw the original image at full resolution.
+        2. Overlay just the selected pronoun text (no background cover).
+        3. Overlay just the guest name text below the pronoun line.
+      No fillRect calls — the image background is preserved entirely.
+    */
+    async function renderToCanvas(canvas) {
+      const img = await loadImage();
+
+      const W = img.naturalWidth;
+      const H = img.naturalHeight;
+      canvas.width = W;
+      canvas.height = H;
+
+      const ctx = canvas.getContext('2d');
+
+      // 1. Draw original image at full resolution
+      ctx.drawImage(img, 0, 0, W, H);
+
+      // 1b. Overlay QR.png exactly on top of the existing QR code in the invitation
+      //     Pixel-measured from sample.jpg bottom-left QR area:
+      //       left ≈ 2.4% W,  top ≈ 84.2% H,  size ≈ 16.5% W (square)
+      const qr = await loadQR();
+      if (qr) {
+        const qrX = Math.round(W * 0.100);
+        const qrY = Math.round(H * 0.842);
+        const qrSize = Math.round(W * 0.165);
+        ctx.drawImage(qr, qrX, qrY, qrSize, qrSize);
+      }
+
+      // ── Measurements calibrated to sample.jpg ─────────────────────────────
+      // Pronoun line centre  (~35.8% down)
+      const pMid = Math.round(H * 0.358);
+      // Name line centre (~39.3% down — the blank dotted area)
+      const nameMidY = Math.round(H * 0.393);
+
+      // ── 2. Draw selected pronoun (text only, no background) ───────────────
+      if (selectedPronoun) {
+        ctx.save();
+        const pFontSize = Math.round(H * 0.022);
+        ctx.font = `600 ${pFontSize}px 'Inter', Arial, sans-serif`;
+        ctx.letterSpacing = `${Math.round(W * 0.004)}px`;
+        ctx.fillStyle = '#1a1208';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(selectedPronoun, W / 2, pMid);
+        ctx.restore();
+      }
+
+      // ── 3. Draw guest name (text only, no background) ─────────────────────
+      const nameVal = document.getElementById('nameInput').value.trim();
+      if (nameVal) {
+        ctx.save();
+        const nameFontSize = Math.round(H * 0.030);
+        ctx.font = `600 ${nameFontSize}px 'Playfair Display', 'Georgia', serif`;
+        ctx.fillStyle = '#1a1208';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(nameVal.toUpperCase(), W / 2, nameMidY);
+        ctx.restore();
+      }
+
+      return canvas;
+    }
+
+    // ─── Generate preview ─────────────────────────────────────────────────────
+    async function generatePreview() {
+      const name = document.getElementById('nameInput').value.trim();
+      if (!name) { alert('Please enter the name first.'); return; }
+      if (!selectedPronoun) { alert('Please select a title.'); return; }
+
+      // Show spinner, hide placeholder
+      document.getElementById('spinner').style.display = 'block';
+      document.getElementById('placeholder').style.display = 'none';
+      document.getElementById('previewCanvas').style.display = 'none';
+      document.getElementById('downloadBtn').classList.remove('visible');
+
+      try {
+        // Ensure web font is loaded in canvas context
+        await document.fonts.ready;
+
+        const canvas = document.getElementById('previewCanvas');
+        await renderToCanvas(canvas);
+
+        canvas.style.display = 'block';
+        document.getElementById('downloadBtn').classList.add('visible');
+      } catch (e) {
+        console.error(e);
+        alert('Could not load the invitation image. Make sure sample.jpg is in the same folder.');
+        document.getElementById('placeholder').style.display = 'flex';
+      } finally {
+        document.getElementById('spinner').style.display = 'none';
+      }
+    }
+
+    // ─── Download full-quality PNG ────────────────────────────────────────────
+    async function downloadImage() {
+      const name = (document.getElementById('nameInput').value.trim() || 'Guest').replace(/\s+/g, '-');
+      const pronoun = (selectedPronoun || 'Guest').replace(/[\s.&]+/g, '-').replace(/-+/g, '-').replace(/-$/, '');
+      const filename = `Engagement-Invitation -${pronoun}-${name}`;
+
+      // Create a separate off-screen canvas at full res for download
+      const offCanvas = document.createElement('canvas');
+      await renderToCanvas(offCanvas);
+
+      // Export as PNG (lossless)
+      const link = document.createElement('a');
+      link.download = `${filename}.png`;
+      link.href = offCanvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // ─── Live preview on Enter ────────────────────────────────────────────────
+    document.getElementById('nameInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') generatePreview();
+    });
+
+    // Pre-load assets silently on page load
+    loadImage().catch(() => { });
+    loadQR().catch(() => { });
+  </script>
+</body>
+
+</html>
