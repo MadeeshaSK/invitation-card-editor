@@ -649,6 +649,15 @@
           const ctx = vCanvas.getContext('2d');
           ctx.drawImage(img, 0, 0, W, H);
 
+          // QR code overlay (same position as editor preview)
+          const qr = await generateDynamicQR(urlTitle, urlName);
+          if (qr) {
+            const qrX = Math.round(W * 0.100);
+            const qrY = Math.round(H * 0.842);
+            const qrSize = Math.round(W * 0.165);
+            ctx.drawImage(qr, qrX, qrY, qrSize, qrSize);
+          }
+
           // Title
           const pFontSize = Math.round(H * 0.022);
           ctx.save();
